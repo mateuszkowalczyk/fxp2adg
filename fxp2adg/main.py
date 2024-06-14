@@ -8,28 +8,54 @@ import fxp
 import dawdreamer
 
 
+FXP_EXTENSION = ".fxp"
+ADG_EXTENSION = ".adg"
+
+
 @dataclass
 class Param:
-    id: int
+    param_id: int
     name: str
     value: float
 
 
-def convert_fxp_to_adg(fxp_preset_path: str, adg_result_folder_path: str, adg_xml_template_path: str, plugin_path: str):
-    MACRO_PARAM_IDS = list(range(218, 222))
+def convert_fxp_in_folder_to_adg(
+    fxp_folder_path: str,
+    adg_result_folder_path: str,
+    adg_template_path: str,
+    plugin_path: str,
+):
+    folder_path = Path(fxp_folder_path)
+    for file_path in folder_path.glob(f"*{FXP_EXTENSION}"):
+        if file_path.is_file():
+            convert_fxp_to_adg(
+                str(file_path),
+                adg_result_folder_path,
+                adg_template_path,
+                plugin_path,
+            )
+
+
+def convert_fxp_to_adg(
+    fxp_preset_path: str,
+    adg_result_folder_path: str,
+    adg_template_path: str,
+    plugin_path: str,
+):
+    macro_param_ids = list(range(218, 222))
 
     preset_state = read_preset_state(fxp_preset_path)
-    macro_params = read_macro_params(
-        fxp_preset_path, plugin_path, MACRO_PARAM_IDS)
+    macro_params = read_macro_params(fxp_preset_path, plugin_path, macro_param_ids)
 
-    xml = ET.parse(adg_xml_template_path)
-    xml_root = xml.getroot()
+    xml = load_template_xml(adg_template_path)
 
-    set_preset_state(xml_root, preset_state)
-    set_macro_params(xml_root, macro_params)
+    set_preset_state(xml, preset_state)
+    set_macro_params(xml, macro_params)
 
-    xml_data = ET.tostring(xml_root, encoding="utf-8", xml_declaration=True)
+    xml_data = ET.tostring(xml, encoding="utf-8", xml_declaration=True)
     adg_data = gzip.compress(xml_data)
+
+    os.makedirs(adg_result_folder_path, exist_ok=True)
     result_path = get_result_path(adg_result_folder_path, fxp_preset_path)
 
     with open(result_path, "wb") as result_file:
@@ -41,22 +67,33 @@ def read_preset_state(fxp_preset_path: str) -> bytes:
     return preset.data
 
 
-def read_macro_params(fxp_preset_path: str, plugin_path: str, param_ids: List[int]) -> List[Param]:
-    daw_engine = dawdreamer.RenderEngine(44100, 128)  # type: ignore
+def read_macro_params(
+    fxp_preset_path: str, plugin_path: str, param_ids: List[int]
+) -> List[Param]:
+    daw_engine = dawdreamer.RenderEngine(44100, 128)
     plugin = daw_engine.make_plugin_processor("plugin", plugin_path)
     plugin.load_preset(fxp_preset_path)
+    return [get_param(plugin, param_id) for param_id in param_ids]
 
-    return [get_param(plugin, id) for id in param_ids]
+
+def load_template_xml(adg_template_path: str) -> ET.Element:
+    with open(adg_template_path, "rb") as template:
+        template_data = template.read()
+
+    xml_data = gzip.decompress(template_data)
+    return ET.fromstring(xml_data)
 
 
-def get_param(plugin, id: int) -> Param:
-    return Param(id, plugin.get_parameter_name(id), plugin.get_parameter(id))
+def get_param(plugin, param_id: int) -> Param:
+    return Param(
+        param_id, plugin.get_parameter_name(param_id), plugin.get_parameter(param_id)
+    )
 
 
 def set_preset_state(xml_root, preset_state: bytes):
     hex_data = preset_state.hex().upper()
 
-    processor_state_tag = xml_root.find('.//ProcessorState')
+    processor_state_tag = xml_root.find(".//ProcessorState")
     if processor_state_tag is not None:
         processor_state_tag.text = hex_data
 
@@ -65,10 +102,9 @@ def set_macro_params(xml_root, macro_params: List[Param]):
     for i, param in enumerate(macro_params):
         value_string = float_to_macro_value_string(param.value)
 
-        xml_root.find(
-            f".//MacroControls.{i}/Manual").attrib['Value'] = value_string
-        xml_root.find(f".//MacroDisplayNames.{i}").attrib['Value'] = param.name
-        xml_root.find(f".//MacroDefaults.{i}").attrib['Value'] = value_string
+        xml_root.find(f".//MacroControls.{i}/Manual").attrib["Value"] = value_string
+        xml_root.find(f".//MacroDisplayNames.{i}").attrib["Value"] = param.name
+        xml_root.find(f".//MacroDefaults.{i}").attrib["Value"] = value_string
 
 
 def float_to_macro_value_string(float_value: float) -> str:
@@ -79,10 +115,11 @@ def float_to_macro_value_string(float_value: float) -> str:
 
 def get_result_path(folder_path: str, preset_path: str) -> str:
     path = Path(preset_path)
-    result_name = path.with_suffix(".adg").name
+    result_name = path.with_suffix(ADG_EXTENSION).name
     return os.path.join(folder_path, result_name)
 
 
 if __name__ == "__main__":
-    convert_fxp_to_adg("FX Alien interface [SN].fxp", "",
-                       "data/template.xml", "/Library/Audio/Plug-Ins/VST/Serum.vst")
+    convert_fxp_in_folder_to_adg(
+        "input", "output", "data/template.adg", "/Library/Audio/Plug-Ins/VST/Serum.vst"
+    )

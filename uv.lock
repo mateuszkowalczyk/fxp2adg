@@ -1,0 +1,49 @@
+version = 1
+revision = 1
+requires-python = "==3.12.*"
+
+[[package]]
+name = "construct"
+version = "2.10.70"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/02/77/8c84b98eca70d245a2a956452f21d57930d22ab88cbeed9290ca630cf03f/construct-2.10.70.tar.gz", hash = "sha256:4d2472f9684731e58cc9c56c463be63baa1447d674e0d66aeb5627b22f512c29", size = 86337 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/fb/08b3f4bf05da99aba8ffea52a558758def16e8516bc75ca94ff73587e7d3/construct-2.10.70-py3-none-any.whl", hash = "sha256:c80be81ef595a1a821ec69dc16099550ed22197615f4320b57cc9ce2a672cb30", size = 63020 },
+]
+
+[[package]]
+name = "dawdreamer"
+version = "0.8.3"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/6c/ea9d3160e7fbdb8666bedbd2dcf8443df1cb57b117d99c94fe421f13f1a7/dawdreamer-0.8.3-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:c04dd967411a2a7eaf9808349b0fdaa718557303b7ce62d28c2456b678bfee14", size = 30718095 },
+    { url = "https://files.pythonhosted.org/packages/4d/d2/16aba9fee64aeb2e025cb572470c7b75a1c26ae84f4c7b2d56a43f9799d1/dawdreamer-0.8.3-cp312-cp312-macosx_12_0_x86_64.whl", hash = "sha256:ddf6d8824a7d038e947be5a951f10695adb77194b03e876e059434644bff239a", size = 33103949 },
+    { url = "https://files.pythonhosted.org/packages/c2/eb/0df1d2c82048e1b02320f2fe9f5f0ad93565ff48102a36bf2e2dedc68788/dawdreamer-0.8.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1d021076af78be70dae925ccddece56f1e5d021fda7dfb02ed6e706aac18b865", size = 40683589 },
+    { url = "https://files.pythonhosted.org/packages/cd/b8/c2b761c6cdae3b25bb6b5ed2f2dcbe18c3f9fe58d3efea041d4147e63689/dawdreamer-0.8.3-cp312-cp312-win_amd64.whl", hash = "sha256:b4eff365bf40f373406279c88728c8545b9a3cbd8b1e6ba29458dc4964e90e2c", size = 30906925 },
+]
+
+[[package]]
+name = "fxp"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/9a/1a4ee6b62978c39dac58e28827b987ddb83a39b281bfdb1a2cb84e61ab68/fxp-0.1.0.tar.gz", hash = "sha256:70bec8131f7e1a0696acdb214868527d77826b75b92ad93c748f298d32629b9c", size = 16865 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d5/c1/28f39378a6a81f9dcb8a4d37cb2a08a38ca0aa647097e7e9c01bce7dda5e/fxp-0.1.0-py3-none-any.whl", hash = "sha256:d45383a8514afb3a6d9fd6908b0493421b04261eae06df1cb084a4ffb3a9b17f", size = 5722 },
+]
+
+[[package]]
+name = "fxp2adg"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "construct" },
+    { name = "dawdreamer" },
+    { name = "fxp" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "construct", specifier = ">=2.10.70" },
+    { name = "dawdreamer", specifier = ">=0.8.3" },
+    { name = "fxp", specifier = ">=0.1.0" },
+]

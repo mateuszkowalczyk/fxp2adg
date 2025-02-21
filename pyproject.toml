@@ -1,17 +1,7 @@
-[tool.poetry]
+[project]
 name = "fxp2adg"
 version = "0.1.0"
 description = ""
-authors = ["Mateusz Kowalczyk <mateuszmkowalczyk@gmail.com>"]
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.12"
-fxp = "^0.1.0"
-dawdreamer = "^0.8.0"
-construct = "^2.10.70"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = "==3.12.*"
+dependencies = ["construct>=2.10.70", "dawdreamer>=0.8.3", "fxp>=0.1.0"]

@@ -1,6 +1,6 @@
 # FXP2ADG Converter
 
-A Python script converting VST FXP presets to Ableton Instrument Rack (ADG file).
+A Python script converting VST FXP presets to Ableton Instrument Racks (ADG files).
 
 ## Description
 
@@ -15,6 +15,7 @@ This script is experimental and has only been tested in some specific conditions
 - Xfer Serum VST2 plugin
 - macOS 15 Sequoia on M1 Pro
 - Ableton Live 12.1.10 Suite
+- a few preset packs from different authors
 
 ## System Requirements
 - Python 3.12
@@ -45,7 +46,7 @@ Arguments:
 - `--plugin`: (Optional) Path to the VST plugin. Defaults to `/Library/Audio/Plug-Ins/VST/Serum.vst`
 
 > [!NOTE]
-> To use plugin other than Serum it is necessary to replace `template.adg` file inside the `data` directory. See [How It Works](#how-it-works) for details
+> To use plugin other than Serum it is necessary to replace `template.adg` file inside the `data` directory. See [How It Works](#how-it-works) for details.
 
 ### Examples
 
@@ -65,7 +66,7 @@ uv run main.py ./my_presets ./converted_presets --plugin "/Library/Audio/Plug-In
 
 The conversion process works in the following steps:
 
-1. **Loading the FXP preset**: The script loads the VST plugin and loads preset data into it - it is necessary, because Serum (and most likely many other plugins) use their custom preset format that is difficult to read in other way.
+1. **Loading the FXP preset**: The script loads the VST2 (I didn't manage to make it work with VST3 when reading parameters, although the output file works fine with VST3) plugin and loads preset data into it - it is necessary, because Serum (and most likely many other plugins) use their custom preset format that is difficult to read in other way.
 2. **Extracting macro controls**: The script extracts macro controls including their values and names to use them to set Instrument Rack macros accordingly
 3. **Creating the ADG file**:
    - The script loads a template Instrument Rack (ADG) file (which is a gzipped XML file). There is a Serum VST3 plugin inside the Instrument Rack with its macro parameters mapped to respective macros of Instrument Rack. It's necessary to replace the template file when using plugin different than Serum.

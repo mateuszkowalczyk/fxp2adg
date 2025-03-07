@@ -10,6 +10,7 @@ import dawdreamer
 
 FXP_EXTENSION = ".fxp"
 ADG_EXTENSION = ".adg"
+ADG_TEMPLATE_PATH = os.path.join("data", "template.adg")
 
 
 @dataclass
@@ -22,16 +23,22 @@ class Param:
 def convert_fxp_in_folder_to_adg(
     fxp_folder_path: str,
     adg_result_folder_path: str,
-    adg_template_path: str,
     plugin_path: str,
 ):
+    if not Path(plugin_path).exists():
+        raise FileNotFoundError(f"Plugin not found: {plugin_path}")
+
     folder_path = Path(fxp_folder_path)
+
+    if not folder_path.exists():
+        raise FileNotFoundError(f"Folder not found: {folder_path}")
+
     for file_path in folder_path.glob(f"*{FXP_EXTENSION}"):
         if file_path.is_file():
             convert_fxp_to_adg(
                 str(file_path),
                 adg_result_folder_path,
-                adg_template_path,
+                ADG_TEMPLATE_PATH,
                 plugin_path,
             )
 
@@ -120,6 +127,18 @@ def get_result_path(folder_path: str, preset_path: str) -> str:
 
 
 if __name__ == "__main__":
-    convert_fxp_in_folder_to_adg(
-        "input", "output", "data/template.adg", "/Library/Audio/Plug-Ins/VST/Serum.vst"
-    )
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Convert FXP presets to ADG format')
+    parser.add_argument('input', help='Input folder containing FXP files')
+    parser.add_argument('output', help='Output folder for ADG files')
+    parser.add_argument('--plugin', default="/Library/Audio/Plug-Ins/VST/Serum.vst", help='Path to VST plugin')
+
+    args = parser.parse_args()
+
+    try:
+        convert_fxp_in_folder_to_adg(
+            args.input, args.output, args.plugin
+        )
+    except FileNotFoundError as e:
+        print(e)

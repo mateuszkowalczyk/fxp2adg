@@ -25,6 +25,18 @@ def convert_fxp_in_folder_to_adg(
     adg_result_folder_path: str,
     plugin_path: str,
 ):
+    """
+    Converts all FXP preset files in a folder to ADG format.
+
+    Args:
+        fxp_folder_path: Path to the folder containing FXP preset files
+        adg_result_folder_path: Path to the folder where ADG files will be saved
+        plugin_path: Path to the VST plugin
+
+    Returns:
+        None
+    """
+
     if not Path(plugin_path).exists():
         raise FileNotFoundError(f"Plugin not found: {plugin_path}")
 
@@ -32,6 +44,8 @@ def convert_fxp_in_folder_to_adg(
 
     if not folder_path.exists():
         raise FileNotFoundError(f"Folder not found: {folder_path}")
+
+    os.makedirs(adg_result_folder_path, exist_ok=True)
 
     for file_path in folder_path.glob(f"*{FXP_EXTENSION}"):
         if file_path.is_file():
@@ -49,41 +63,53 @@ def convert_fxp_to_adg(
     adg_template_path: str,
     plugin_path: str,
 ):
+    """
+    Converts a FXP preset to an ADG preset.
+
+    Args:
+        fxp_preset_path: Path to the FXP preset file.
+        adg_result_folder_path: Path to the folder where the ADG preset will be saved.
+        adg_template_path: Path to the ADG template file.
+        plugin_path: Path to the plugin file.
+
+    Returns:
+        None
+    """
+
     macro_param_ids = list(range(218, 222))
 
-    preset_state = read_preset_state(fxp_preset_path)
-    macro_params = read_macro_params(fxp_preset_path, plugin_path, macro_param_ids)
+    preset_state = _read_preset_state(fxp_preset_path)
+    macro_params = _read_macro_params(fxp_preset_path, plugin_path, macro_param_ids)
 
-    xml = load_template_xml(adg_template_path)
+    xml = _load_template_xml(adg_template_path)
 
-    set_preset_state(xml, preset_state)
-    set_macro_params(xml, macro_params)
+    _set_preset_state(xml, preset_state)
+    _set_macro_params(xml, macro_params)
 
     xml_data = ET.tostring(xml, encoding="utf-8", xml_declaration=True)
     adg_data = gzip.compress(xml_data)
 
-    os.makedirs(adg_result_folder_path, exist_ok=True)
-    result_path = get_result_path(adg_result_folder_path, fxp_preset_path)
+    result_path = _get_result_path(adg_result_folder_path, fxp_preset_path)
 
     with open(result_path, "wb") as result_file:
         result_file.write(adg_data)
 
 
-def read_preset_state(fxp_preset_path: str) -> bytes:
+def _read_preset_state(fxp_preset_path: str) -> bytes:
     preset = fxp.FXP(fxp_preset_path)
     return preset.data
 
 
-def read_macro_params(
+def _read_macro_params(
     fxp_preset_path: str, plugin_path: str, param_ids: List[int]
 ) -> List[Param]:
     daw_engine = dawdreamer.RenderEngine(44100, 128)
     plugin = daw_engine.make_plugin_processor("plugin", plugin_path)
     plugin.load_preset(fxp_preset_path)
-    return [get_param(plugin, param_id) for param_id in param_ids]
+    return [_get_param(plugin, param_id) for param_id in param_ids]
 
 
-def load_template_xml(adg_template_path: str) -> ET.Element:
+def _load_template_xml(adg_template_path: str) -> ET.Element:
     with open(adg_template_path, "rb") as template:
         template_data = template.read()
 
@@ -91,13 +117,13 @@ def load_template_xml(adg_template_path: str) -> ET.Element:
     return ET.fromstring(xml_data)
 
 
-def get_param(plugin, param_id: int) -> Param:
+def _get_param(plugin, param_id: int) -> Param:
     return Param(
         param_id, plugin.get_parameter_name(param_id), plugin.get_parameter(param_id)
     )
 
 
-def set_preset_state(xml_root, preset_state: bytes):
+def _set_preset_state(xml_root, preset_state: bytes):
     hex_data = preset_state.hex().upper()
 
     processor_state_tag = xml_root.find(".//ProcessorState")
@@ -105,22 +131,22 @@ def set_preset_state(xml_root, preset_state: bytes):
         processor_state_tag.text = hex_data
 
 
-def set_macro_params(xml_root, macro_params: List[Param]):
+def _set_macro_params(xml_root, macro_params: List[Param]):
     for i, param in enumerate(macro_params):
-        value_string = float_to_macro_value_string(param.value)
+        value_string = _float_to_macro_value_string(param.value)
 
         xml_root.find(f".//MacroControls.{i}/Manual").attrib["Value"] = value_string
         xml_root.find(f".//MacroDisplayNames.{i}").attrib["Value"] = param.name
         xml_root.find(f".//MacroDefaults.{i}").attrib["Value"] = value_string
 
 
-def float_to_macro_value_string(float_value: float) -> str:
+def _float_to_macro_value_string(float_value: float) -> str:
     MAX_MACRO_VALUE = 127
     macro_value = round(float_value * MAX_MACRO_VALUE)
     return str(macro_value)
 
 
-def get_result_path(folder_path: str, preset_path: str) -> str:
+def _get_result_path(folder_path: str, preset_path: str) -> str:
     path = Path(preset_path)
     result_name = path.with_suffix(ADG_EXTENSION).name
     return os.path.join(folder_path, result_name)

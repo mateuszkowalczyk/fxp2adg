@@ -75,4 +75,4 @@ The conversion process works in the following steps:
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License](LICENSE.md)

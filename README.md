@@ -37,12 +37,12 @@ Run the script using `uv run` **inside** the project directory.
 
 ```bash
 cd fxp2adg
-uv run main.py <input_folder> <output_folder> [--plugin <plugin_path>]
+uv run main.py [-h] [--plugin PLUGIN_PATH] input output
 ```
 
 Arguments:
-- `input_folder`: Directory containing the FXP preset files
-- `output_folder`: Directory where the converted ADG files will be saved
+- `input`: Folder containing FXP preset files
+- `output`: Folder where converted ADG files will be saved
 - `--plugin`: (Optional) Path to the VST plugin. Defaults to `/Library/Audio/Plug-Ins/VST/Serum.vst`
 
 > [!NOTE]

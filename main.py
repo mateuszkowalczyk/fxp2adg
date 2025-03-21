@@ -156,8 +156,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Convert FXP presets to ADG format')
-    parser.add_argument('input', help='Input folder containing FXP files')
-    parser.add_argument('output', help='Output folder for ADG files')
+    parser.add_argument('input', help='Folder containing FXP preset files')
+    parser.add_argument('output', help='Folder where converted ADG files will be save')
     parser.add_argument('--plugin', default="/Library/Audio/Plug-Ins/VST/Serum.vst", help='Path to VST plugin')
 
     args = parser.parse_args()
